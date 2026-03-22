@@ -6,7 +6,7 @@ This repository provides a representative reproducibility package for the 2D imm
 
 - the customized IBAMR-based solver source
 - a validation-case mesh and input file
-- an archived isolated-cylinder reference snapshot
+- an archived isolated-cylinder reference data
 - post-processing scripts that document how case-level and campaign-level metrics were computed
 
 Two IBAMR versions are relevant in this study:
@@ -77,12 +77,12 @@ Starter files for reproducing the isolated-cylinder validation case at `Ur = 5`.
 
 - `main2d`: executable that can be used as a starting point for a rerun
 - `input2d`: runtime input file for a fresh run
-- `example.cpp`: source snapshot kept with the case
+- `example.cpp`: source code kept with the case
 - `previous_data/`: archived reference outputs from the author's run
 
 ### `IC_VIV_Ur_5_data/previous_data/`
 
-Read-only reference snapshot of the archived isolated-cylinder case.
+Read-only reference force and displacement data of the archived isolated-cylinder case.
 
 This folder contains:
 
@@ -116,7 +116,7 @@ Some study-level plotting and aggregation scripts are also provided for complete
 
 ## Important Usage Note
 
-`IC_VIV_Ur_5_data/previous_data/` is an archived snapshot and should be kept unchanged.
+`IC_VIV_Ur_5_data/previous_data/` is an archived data and should be kept unchanged.
 
 For a clean separation between archived results and new results, do not run the solver inside `IC_VIV_Ur_5_data/previous_data/`, and preferably do not run directly inside `IC_VIV_Ur_5_data/` either. Create a separate working directory for your own rerun.
 
@@ -227,7 +227,7 @@ module load openmpi/<mpi-version>
 
 ## Recommended Rerun Workflow
 
-To keep your new outputs separate from the archived reference snapshot, create a new working directory at the repository root.
+To keep your new outputs separate from the archived reference data, create a new working directory at the repository root.
 
 ### Step 1: create a clean run folder
 
@@ -300,7 +300,7 @@ The repository now exposes several layers of post-processing logic.
 
 ### 1. Included isolated-cylinder case post-processing
 
-`IC_VIV_Ur_5_data/previous_data/post.py` is the archived case-level script for the included isolated-cylinder snapshot.
+`IC_VIV_Ur_5_data/previous_data/post.py` is the archived case-level script for the included isolated-cylinder data.
 
 It reads local run outputs from the current working directory and produces the summary CSV stored in the archive.
 
@@ -344,14 +344,14 @@ Because this script was written for the broader study workflow, some plotting se
 4. Copy `main2d` and `input2d` into that new directory.
 5. Run the validation case in serial or through MPI.
 6. If desired, copy `post.py` into the run directory and regenerate the isolated-cylinder summary.
-7. Use the archived files in `IC_VIV_Ur_5_data/previous_data/` as the public reference snapshot.
+7. Use the archived files in `IC_VIV_Ur_5_data/previous_data/` as the public reference data.
 8. For broader campaign studies, use `post1en.py`, `origin1.py`, and `plot.py` on your own local datasets or on datasets shared separately.
 
 ## Reproducibility Notes
 
-- This repository includes representative input files, one archived validation snapshot, and the post-processing scripts used to define derived quantities.
+- This repository includes representative input files, one archived validation data set, and the post-processing scripts used to define derived quantities.
 - The current scripts document how metrics such as power density, OAOP, OAOE, and improvement factors were computed.
-- Do not modify or overwrite files inside `IC_VIV_Ur_5_data/previous_data/` if you want to preserve the archived snapshot.
+- Do not modify or overwrite files inside `IC_VIV_Ur_5_data/previous_data/` if you want to preserve the archived data.
 - If `input2d` is edited to use absolute paths, those paths must be updated on a new machine.
 - The validation case in this package was originally run with IBAMR `0.14.0`.
 - The present production simulations reported in the manuscript were run with IBAMR `0.16.0`.

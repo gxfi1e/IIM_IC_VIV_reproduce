@@ -1,0 +1,298 @@
+// physical parameters
+PI = 3.14159265359       // pi
+RHO = 0.997              // fluid density
+D_1   = 1.0              // body 1 diameter
+R_1   = D_1/2.0          // body 1 radius
+D_2   = 1.0              // body 2 diameter which is ignored in IC case
+R_2   = D_2/2.0          // body 2 radius which is ignored in IC case
+D_3   = 1.0              // body 3 diameter which is ignored in IC case
+R_3   = D_3/2.0          // body 3 radius which is ignored in IC case
+Ratio = 1                // diameter ratio of body 3 to body 1 and is ignored in IC case
+RL = D_3 / Ratio         
+TIMEending = 300         // simulation end time
+samping_duration = 100   // duration for sampling data, should be less than TIMEending
+resolution = 101         // grid resolution on coarsest level, cooresponding to the finest grid resolution of 1/ (100*2^4 / 20) = 1/80
+damping = 0              // structural damping ratio, 0 for no damping
+MESH_FILENAME = "../IC_mesh/cylinder40.e"    // body 1 mesh file 
+
+round_num = 4  //keep numbers after .
+
+SPU = 0        //upstream spacing ratio from UC to plate, which is ignored in the IC case
+SPD = 0        //downstream spacing ratio from UC to plate, which is ignored in the IC case
+UR = 5         //reduced velocity   
+
+G = 0.6        //half gap ratio, which is ignored in the IC case
+Re = 150.0     //Reynolds number based on D_1 and U_MAX
+U_MAX = 1.0    //maximum velocity of the flow
+
+
+A_1 = 0  //Cylinder_1 incidence angle and is ignored in the IC case
+M_1 = 1 //Cylinder_1 diameter magnification and is ignored in the IC case
+
+A_2 = 0  //Cylinder_2 incidence angle and is ignored in the IC case
+M_2 = 1 //Cylinder_2 diameter magnification and is ignored in the IC case
+
+A_3 = 0  //Cylinder_3 incidence angle and is ignored in the IC case
+M_3 = 1 //Cylinder_3 diameter magnification and is ignored in the IC case
+
+SD_1 = 0 //streamwise Spacing from cy1 to original point 
+TD_1 = 0 //streamwise Spacing from cy1 to original point
+
+SD_2 = G + SPU + G + SPD //streamwise Spacing from cy2 to original point, which is ignored in the IC case since the absence of cy2
+TD_2 = 0 //streamwise Spacing from cy2 to original point, which is ignored in the IC case since the absence of cy2
+
+SD_3 = G + SPU //Spacing from cy3 to original point, which is ignored in the IC case since the absence of cy3
+TD_3 = 0 //Spacing from cy3 to original point, which is ignored in the IC case since the absence of cy3
+
+U_red_1 = UR //cy1 reduced velocity
+U_red_2 = UR //cy2 reduced velocity
+U_red_3 = UR //cy2 reduced velocity
+
+Fn_1 = U_MAX/((D_1*M_1)*U_red_1) //natural frequency of cy1
+Fn_2 = U_MAX/((D_2*M_2)*U_red_2) //natural frequency of cy2, which is ignored in the IC case since the absence of cy2
+Fn_3 = U_MAX/((D_3*M_3)*U_red_3) //natural frequency of cy3, which is ignored in the IC case since the absence of cy3
+
+M_RATIO_1 = 2.0  //Cy1 mass ratio
+M_RATIO_2 = 2.0  //Cy2 mass ratio which is ignored in the IC case since the absence of cy2
+M_RATIO_3 = 2.0  //Cy3 mass ratio which is ignored in the IC case since the absence of cy3
+
+Damping_ratio_1 = damping //Cy1 damping ratio 
+Damping_ratio_2 = damping //Cy2 damping ratio which is ignored in the IC case since the absence of cy2
+Damping_ratio_3 = damping //Cy3 damping ratio which is ignored in the IC case since the absence of cy3
+
+save_vis_per_second = 1/Fn_1/8 // save visualization data every 1/8 of the natural period of cy1, which is enough to capture the dynamics of the system and avoid generating too much data.
+
+
+
+MU = U_MAX*RHO*(D_1*M_1)/Re // dynamic viscosity of the fluid, computed from Reynolds number, maximum velocity, and body diameter
+
+BODY_MASS_1 = M_RATIO_1* RHO*0.25*PI*(D_1*M_1)^2   // mass of body 1, computed from mass ratio, fluid density, and body diameter. The thickness of the body is assumed to be D_1*M_1, which is a common assumption for 2D simulations of cylindrical bodies. The area of the body is then pi*(D_1*M_1/2)^2, and the mass is density times area times thickness, which simplifies to RHO*0.25*PI*(D_1*M_1)^2 * M_RATIO_1.
+BODY_SPRING_CONSTANT_1 = BODY_MASS_1*(2.0*PI*Fn_1)^2   // spring constant of body 1, computed from mass and natural frequency.
+BODY_DAMPING_CONSTANT_1 =  Damping_ratio_1 * 2.0 * sqrt(BODY_SPRING_CONSTANT_1*BODY_MASS_1) // damping constant of body 1, computed from damping ratio, mass, and spring constant using the formula for critical damping. The critical damping constant is 2*sqrt(k*m), where k is the spring constant and m is the mass. The actual damping constant is then the damping ratio times the critical damping constant.
+
+BODY_MASS_2 = M_RATIO_2*RHO*0.25*PI*(D_2*M_2)^2 // mass of body 2, computed from mass ratio, fluid density, and body diameter. It is ignored in the IC case since the absence of body 2.
+BODY_SPRING_CONSTANT_2 = BODY_MASS_2*(2.0*PI*Fn_2)^2   // spring constant of body 2, computed from mass and natural frequency. It is ignored in the IC case since the absence of body 2.
+BODY_DAMPING_CONSTANT_2 =  Damping_ratio_2 * 2.0 * sqrt(BODY_SPRING_CONSTANT_2*BODY_MASS_2) // damping constant of body 2, computed from damping ratio, mass, and spring constant using the formula for critical damping. It is ignored in the IC case since the absence of body 2.
+
+BODY_MASS_3 = M_RATIO_3*RHO*0.25*PI*(D_3*M_3)^2 // mass of body 3, computed from mass ratio, fluid density, and body diameter. It is ignored in the IC case since the absence of body 3.
+BODY_SPRING_CONSTANT_3 = BODY_MASS_3*(2.0*PI*Fn_3)^2  // spring constant of body 3, computed from mass and natural frequency. It is ignored in the IC case since the absence of body 3.
+BODY_DAMPING_CONSTANT_3 =  Damping_ratio_3 * 2.0 * sqrt(BODY_SPRING_CONSTANT_3*BODY_MASS_3) // damping constant of body 3, computed from damping ratio, mass, and spring constant using the formula for critical damping. It is ignored in the IC case since the absence of body 3.
+
+
+// grid spacing parameters
+L = 20.0 * D_1                                 // width of computational domain
+MAX_LEVELS = 5                                 // maximum number of levels in locally refined grid
+REF_RATIO  = 2                                 // refinement ratio between levels
+N = resolution                                 // actual    number of grid cells on coarsest grid level
+NFINEST = (REF_RATIO^(MAX_LEVELS - 1))*N       // effective number of grid cells on finest   grid level
+DX0 = L/N                                      // mesh width on coarsest grid level
+DX  = L/NFINEST                                // mesh width on finest grid level
+MFAC = 2.0                                     // ratio of Lagrangian mesh width to Cartesian mesh width
+ELEM_TYPE = "QUAD4"                            // type of element to use for structure discretization
+pout_inter = 50                                //print intervel
+// solver parameters
+IB_DELTA_FUNCTION            = "IB_3"            // the type of smoothed delta function to use for Lagrangian-Eulerian interaction
+SPLIT_FORCES                 = TRUE
+USE_PRESSURE_JUMP_CONDITIONS = TRUE              // whether to impose pressure jumps at fluid-structure interfaces
+USE_VELOCITY_JUMP_CONDITIONS = TRUE              // whether to impose pressure jumps at fluid-structure interfaces
+TRACTION_ACTIVATION_TIME     = 0.0
+COMPUTE_FLUID_TRACTION       = TRUE
+CALCULATE_INTERIOR_SIDE      = FALSE
+WSS_CALC_WIDTH               = 1.03
+P_CALC_WIDTH                 = 1.3
+USE_CONSISTENT_MASS_MATRIX   = TRUE              // whether to use a consistent or lumped mass matrix
+IB_POINT_DENSITY             = 4.0               // approximate density of IB quadrature points for Lagrangian-Eulerian interaction
+SOLVER_TYPE                  = "STAGGERED"       // the fluid solver to use (STAGGERED or COLLOCATED)
+START_TIME                   = 0.0               // initial simulation time
+END_TIME                     = TIMEending        // final simulation time
+GROW_DT                      = 50.0e0            // growth factor for timesteps
+CONVECTIVE_TS_TYPE           = "ADAMS_BASHFORTH" // convective time stepping type
+CONVECTIVE_OP_TYPE           = "PPM"             // convective differencing discretization type
+CONVECTIVE_FORM              = "ADVECTIVE"       // how to compute the convective terms
+NORMALIZE_PRESSURE           = FALSE             // whether to explicitly force the pressure to have mean zero
+CFL_MAX                      = 0.4               // maximum CFL number
+DT                           = 0.25*CFL_MAX*DX   // maximum timestep size
+ERROR_ON_DT_CHANGE           = TRUE              // whether to emit an error message if the time step size changes
+VORTICITY_TAGGING            = TRUE              // whether to tag cells for refinement based on vorticity thresholds
+TAG_BUFFER                   = 2                 // size of tag buffer used by grid generation algorithm
+REGRID_CFL_INTERVAL          = 0.5               // regrid whenever any material point could have moved 0.5 meshwidths since previous regrid
+OUTPUT_U                     = TRUE
+OUTPUT_P                     = TRUE
+OUTPUT_F                     = TRUE
+OUTPUT_OMEGA                 = TRUE
+OUTPUT_DIV_U                 = TRUE
+ENABLE_LOGGING               = TRUE
+
+// model parameters
+
+NUM_CYCLES = 1
+
+KAPPA_S_1 = 1000 //0.0015/DT^2 //500 //0.0075*DX/DT^2 //100 //0.05 *DX/DT^2
+ETA_S_1 = 0.0 // 0.0/DT //0.5 //0.025*DX/DT
+KAPPA_S_2 = 1000 //0.0015/DT^2 //500 //0.0075*DX/DT^2 //100 //0.05 *DX/DT^2
+ETA_S_2 = 0.0 // 0.0/DT //0.5 //0.025*DX/DT
+KAPPA_S_3 = 1000 //0.0015/DT^2 //500 //0.0075*DX/DT^2 //100 //0.05 *DX/DT^2
+ETA_S_3 = 0.0 // 0.0/DT //0.5 //0.025*DX/DT
+
+PROJECTION_METHOD_TYPE = "PRESSURE_UPDATE"
+SECOND_ORDER_PRESSURE_UPDATE = TRUE
+
+VelocityBcCoefs_0 {
+   t_half = 0.5
+   tau = 0.25
+   u   = U_MAX
+
+   acoef_function_0 = "1.0"
+   acoef_function_1 = "0.0"
+   acoef_function_2 = "0.0"
+   acoef_function_3 = "0.0"
+
+   bcoef_function_0 = "0.0"
+   bcoef_function_1 = "1.0"
+   bcoef_function_2 = "1.0"
+   bcoef_function_3 = "1.0"
+
+   gcoef_function_0 = "(tanh(t/2-t_half/tau)+tanh(t_half/tau))/(1+tanh(t_half/tau))"
+   gcoef_function_1 = "0.0"
+   gcoef_function_2 = "0.0" 
+   gcoef_function_3 = "0.0"
+}
+
+VelocityBcCoefs_1 {
+  L = L
+   acoef_function_0 = "1.0"
+   acoef_function_1 = "0.0"
+   acoef_function_2 = "1.0"
+   acoef_function_3 = "1.0"
+
+   bcoef_function_0 = "0.0"
+   bcoef_function_1 = "1.0"
+   bcoef_function_2 = "0.0"
+   bcoef_function_3 = "0.0"
+
+   gcoef_function_0 = "cos(pi*X_1/L)*exp(-2.0*t)"
+   gcoef_function_1 = "0.0"
+   gcoef_function_2 = "0.0"
+   gcoef_function_3 = "0.0"
+}
+
+IBHierarchyIntegrator {
+   start_time          = START_TIME
+   end_time            = END_TIME
+   grow_dt             = GROW_DT
+   regrid_cfl_interval = REGRID_CFL_INTERVAL
+   dt_max              = DT
+   error_on_dt_change  = ERROR_ON_DT_CHANGE
+   enable_logging      = ENABLE_LOGGING
+    num_cycles = NUM_CYCLES
+}
+
+IIMethod {
+   IB_delta_fcn                 = IB_DELTA_FUNCTION
+   split_forces                 = SPLIT_FORCES
+   use_pressure_jump_conditions = USE_PRESSURE_JUMP_CONDITIONS
+   use_velocity_jump_conditions = USE_VELOCITY_JUMP_CONDITIONS
+   use_consistent_mass_matrix   = USE_CONSISTENT_MASS_MATRIX
+   IB_point_density             = IB_POINT_DENSITY
+   p_calc_width	                = P_CALC_WIDTH
+   wss_calc_width               = WSS_CALC_WIDTH
+   compute_fluid_traction       = COMPUTE_FLUID_TRACTION
+   calculate_interior_side      = CALCULATE_INTERIOR_SIDE
+   traction_activation_time     = TRACTION_ACTIVATION_TIME
+   min_ghost_cell_width         = 6
+}
+
+
+INSStaggeredHierarchyIntegrator {
+   mu                            = MU
+   rho                           = RHO
+   start_time                    = START_TIME
+   end_time                      = END_TIME
+   grow_dt                       = GROW_DT
+   convective_time_stepping_type = CONVECTIVE_TS_TYPE
+   convective_op_type            = CONVECTIVE_OP_TYPE
+   convective_difference_form    = CONVECTIVE_FORM
+   normalize_pressure            = NORMALIZE_PRESSURE
+   cfl                           = CFL_MAX
+   dt_max                        = DT
+   using_vorticity_tagging       = VORTICITY_TAGGING
+   vorticity_abs_thresh          = 0.25,0.5,1,1.5,2
+   tag_buffer                    = TAG_BUFFER
+   output_U                      = OUTPUT_U
+   output_P                      = OUTPUT_P
+   output_F                      = OUTPUT_F
+   output_Omega                  = OUTPUT_OMEGA
+   output_Div_U                  = OUTPUT_DIV_U
+   enable_logging                = ENABLE_LOGGING
+   num_cycles = NUM_CYCLES
+}
+
+Main {
+   solver_type = SOLVER_TYPE
+
+// log file parameters
+   log_file_name               = "II2d_LMred.log"
+   log_all_nodes               = FALSE
+
+// visualization dump parameters
+   viz_writer                  = "VisIt","ExodusII"
+   viz_dump_interval           =  int(save_vis_per_second / DT)
+   viz_dump_dirname            = "viz_II2d_LMred"
+   visit_number_procs_per_file = 1
+
+// restart dump parameters
+   restart_dump_interval       = int(50 / DT)
+   restart_dump_dirname        = "restart_II2d"
+
+// hierarchy data dump parameters
+   data_dump_interval          = 0
+   data_dump_dirname           = "hier_data_II2d"
+
+// timer dump parameters
+   timer_dump_interval         = 0
+}
+
+CartesianGeometry {
+   domain_boxes = [ (0,0),(2*N - 1,N - 1) ]
+   x_lo = -0.5*L,-0.5*L
+   x_up =  1.5*L, 0.5*L
+   periodic_dimension = 0,0
+}
+
+GriddingAlgorithm {
+   max_levels = MAX_LEVELS
+   ratio_to_coarser {
+      level_1 = REF_RATIO,REF_RATIO
+      level_2 = REF_RATIO,REF_RATIO
+      level_3 = REF_RATIO,REF_RATIO
+      level_4 = REF_RATIO,REF_RATIO
+      level_5 = REF_RATIO,REF_RATIO
+      level_6 = REF_RATIO,REF_RATIO
+   }
+   largest_patch_size {
+      level_0 = 512,512  // all finer levels will use same values as level_0
+   }
+   smallest_patch_size {
+      level_0 = 16, 16  // all finer levels will use same values as level_0
+   }
+   efficiency_tolerance = 0.80e0  // min % of tag cells in new patch level
+   combine_efficiency   = 0.80e0  // chop box if sum of volumes of smaller boxes < efficiency * vol of large box
+   allow_patches_smaller_than_minimum_size_to_prevent_overlaps = TRUE
+}
+
+StandardTagAndInitialize {
+   tagging_method = "GRADIENT_DETECTOR"
+}
+
+LoadBalancer {
+   bin_pack_method     = "SPATIAL"
+   max_workload_factor = 1
+}
+
+TimerManager{
+   print_exclusive = FALSE
+   print_total = TRUE
+   print_threshold = 0.1
+
+   timer_list = "IBAMR::*::*","IBTK::*::*","*::*::*"
+}

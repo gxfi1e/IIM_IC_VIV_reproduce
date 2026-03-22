@@ -133,9 +133,9 @@ For the included validation example:
 - `START_TIME = 0.0`
 - `END_TIME = TIMEending`
 - `TIMEending = 200`
-- `samping_duration = 100`
+- `sampling_duration = 100`
 
-The current post-processing scripts evaluate statistical quantities over the last `samping_duration` seconds of the run.
+The current post-processing scripts evaluate statistical quantities over the last `sampling_duration` seconds of the run.
 
 ## Minimum Files Needed
 
@@ -311,7 +311,7 @@ It reads local run outputs from the current working directory and produces the s
 At a high level, it:
 
 - reads `input2d` and local history files
-- filters the histories to the final sampling window defined by `samping_duration`
+- filters the histories to the final sampling window defined by `sampling_duration.`
 - computes response, frequency, power, efficiency, and selected added-damping or galloping-related indicators
 - writes a per-case CSV named like `computation_results3_<SPU>_<SPD>_<UR>_<damping>.csv`
 

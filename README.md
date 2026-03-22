@@ -6,7 +6,7 @@ This repository provides a representative reproducibility package for the 2D imm
 
 - the customized IBAMR-based solver source
 - a validation-case mesh and input file
-- an archived isolated-cylinder reference snapshot
+- an archived isolated-cylinder reference data
 - post-processing scripts that document how case-level and campaign-level metrics were computed
 
 Two IBAMR versions are relevant in this study:
@@ -78,12 +78,12 @@ Starter files for reproducing the isolated-cylinder validation case at `Ur = 5`.
 
 - `main2d`: executable that can be used as a starting point for a rerun
 - `input2d`: runtime input file for a fresh run
-- `example.cpp`: source snapshot kept with the case
+- `example.cpp`: source code kept with the case
 - `previous_data/`: archived reference outputs from the author's run
 
 ### `IC_VIV_Ur_5_data/previous_data/`
 
-Read-only reference snapshot of the archived isolated-cylinder case.
+Read-only reference force and displacement data of the archived isolated-cylinder case.
 
 This folder contains:
 
@@ -118,7 +118,7 @@ Some study-level aggregation and plotting scripts are also provided for complete
 
 ## Important Usage Note
 
-`IC_VIV_Ur_5_data/previous_data/` is an archived snapshot and should be kept unchanged.
+`IC_VIV_Ur_5_data/previous_data/` is an archived data and should be kept unchanged.
 
 For a clean separation between archived results and new results, do not run the solver inside `IC_VIV_Ur_5_data/previous_data/`, and preferably do not run directly inside `IC_VIV_Ur_5_data/` either. Create a separate working directory for your own rerun.
 
@@ -229,7 +229,7 @@ module load openmpi/<mpi-version>
 
 ## Recommended Rerun Workflow
 
-To keep your new outputs separate from the archived reference snapshot, create a new working directory at the repository root.
+To keep your new outputs separate from the archived reference data, create a new working directory at the repository root.
 
 ### Step 1: create a clean run folder
 
@@ -298,11 +298,11 @@ Use these files as reference data when comparing against outputs generated in yo
 
 ## Post-Processing Workflow
 
-The repository now exposes several layers of post-processing logic.
+The repository includes both case-level and study-level post-processing scripts.
 
 ### 1. Included isolated-cylinder case post-processing
 
-`IC_VIV_Ur_5_data/previous_data/post.py` is the archived case-level script for the included isolated-cylinder snapshot.
+`IC_VIV_Ur_5_data/previous_data/post.py` is the archived case-level script for the included isolated-cylinder data.
 
 It reads local run outputs from the current working directory and produces the summary CSV stored in the archive.
 
@@ -317,46 +317,103 @@ At a high level, it:
 - computes response, frequency, power, efficiency, and selected added-damping or galloping-related indicators
 - writes a per-case CSV named like `computation_results3_<SPU>_<SPD>_<UR>_<damping>.csv`
 
-### 3. Campaign aggregation
+### 3. Per-system aggregation
 
 `scripts_for_post_calculation/origin1.py` collects the per-case `computation_results3_*.csv` files from a study directory and merges them into `final_results.csv`.
 
-Before reuse, the user should edit the hard-coded `base_dir` near the top of the script to match the local filesystem layout.
+Run this step separately for each system dataset you want to summarize, such as IC, C-C, and C-P-C.
+
+Before reuse, edit the hard-coded `base_dir` near the top of `origin1.py` so that it points to the correct local study directory.
 
 ### 4. Study-level summary metrics
 
-`scripts_for_post_calculation/adv.py` reads the per-system aggregated CSV files for the IC, CC, and CPC datasets and produces summary tables for downstream plotting.
+`scripts_for_post_calculation/adv.py` reads the aggregated `final_results.csv` files for the IC, C-C, and C-P-C datasets and computes the summary metrics used by the manuscript figures.
 
-At a high level, it:
+It writes:
 
-- loads `final_results.csv` for the isolated-cylinder, C-C, and C-P-C datasets
-- harmonizes column names across datasets
-- computes peak power, peak efficiency, and the reduced velocity at which each peak occurs
-- computes OAOP and OAOE as trapezoidal averages over reduced velocity
-- computes OAOP and OAOE improvement metrics relative to the isolated-cylinder baseline
-- computes UC/DC contribution ratios to total OAOP and OAOE
-- computes the peak system power density from the system power divided by the instantaneous swept volume proxy used in the script
-- writes `summary_IC.csv`, `summary_CC.csv`, and `summary_CPC.csv`
+- `summary_IC.csv`
+- `summary_CC.csv`
+- `summary_CPC.csv`
 
-In `adv.py`, the power-density calculation is performed at each reduced velocity using the system power and a case width-height product, then the reported metric is taken as the peak value within the corresponding `(SP_U, SP_D, damping)` group.
+Before reuse, edit the hard-coded `PATH_IC`, `PATH_CC`, and `PATH_CPC` variables near the top of `adv.py` so that they point to the correct local `final_results.csv` files.
 
-Before reuse, the user should edit the hard-coded `PATH_IC`, `PATH_CC`, and `PATH_CPC` variables near the top of `adv.py` so that they point to the correct local `final_results.csv` files.
+### 5. Plot generation
 
-### 5. Manuscript plotting and final comparative figures
-
-`scripts_for_post_calculation/adv_plot.py` reads `summary_IC.csv`, `summary_CC.csv`, and `summary_CPC.csv` and generates the manuscript-level comparison figures.
-
-The script includes plotting routines for metrics such as:
-
-- power density
-- OAOP
-- OAOE
-- `ΔOAOP`
-- `ΔOAOE`
-- OAOP contribution breakdowns
-- peak-power and peak-efficiency comparisons across damping ratio, `SP_U`, and `SP_D`
+`scripts_for_post_calculation/adv_plot.py` reads `summary_IC.csv`, `summary_CC.csv`, and `summary_CPC.csv` and generates the comparative figures.
 
 `adv_plot.py` assumes that the summary CSV files generated by `adv.py` are available in the working directory.
+
+## How To Obtain the Study Metrics
+
+To reproduce the study-level metrics from local datasets:
+
+1. Generate case-level `computation_results3_*.csv` files using `post1en.py` for the relevant cases.
+2. Run `origin1.py` for each system dataset to build its `final_results.csv`.
+3. Edit `PATH_IC`, `PATH_CC`, and `PATH_CPC` in `adv.py` so they point to those `final_results.csv` files.
+4. Run `adv.py` to generate `summary_IC.csv`, `summary_CC.csv`, and `summary_CPC.csv`.
+5. Run `adv_plot.py` in the directory that contains the summary CSV files to generate the comparative figures.
+
+The metric definitions themselves are implemented in `adv.py`, while `adv_plot.py` only reads the precomputed summary columns and plots them.
+
+## Metric Definitions
+
+The summary metrics reported by `adv.py` include peak values, OAOP, OAOE, improvement metrics, contribution ratios, and peak power density.
+
+### OAOP and OAOE
+
+For each `(SP_U, SP_D, damping)` group, `adv.py` sorts the available points by reduced velocity `UR` and evaluates trapezoidal averages over the simulated `UR` range:
+
+- `OAOP = (1 / (UR_max - UR_min)) * integral P(UR) dUR`
+- `OAOE = (1 / (UR_max - UR_min)) * integral eta(UR) dUR`
+
+For the isolated-cylinder dataset, the code uses the total response as the baseline quantity:
+
+- `OAOP_IC = OAOP_total`
+- `OAOE_IC = OAOE_total`
+
+For C-C and C-P-C datasets, UC, DC, and total values are computed separately.
+
+### Improvement Metrics
+
+The improvement metrics are defined relative to the isolated-cylinder baseline stored in the IC summary:
+
+- `Delta_OAOP_UC = (OAOP_UC / OAOP_IC - 1) * 100`
+- `Delta_OAOP_DC = (OAOP_DC / OAOP_IC - 1) * 100`
+- `Delta_OAOP_Total = (OAOP_Total / (2 * OAOP_IC) - 1) * 100`
+- `Delta_OAOE_UC = (OAOE_UC / OAOE_IC - 1) * 100`
+- `Delta_OAOE_DC = (OAOE_DC / OAOE_IC - 1) * 100`
+- `Delta_OAOE_Total = (OAOE_Total / OAOE_IC - 1) * 100`
+
+Note that the total OAOP improvement is normalized by `2 * OAOP_IC`, while the total OAOE improvement is normalized by `OAOE_IC`, matching the current implementation in `adv.py`.
+
+### OAOP and OAOE Contribution Ratios
+
+For C-C and C-P-C cases, `adv.py` also computes the UC/DC contribution ratios:
+
+- `pct_OAOP_UC = 100 * OAOP_UC / OAOP_Total`
+- `pct_OAOP_DC = 100 * OAOP_DC / OAOP_Total`
+- `pct_OAOE_UC = 100 * OAOE_UC / (OAOE_UC + OAOE_DC)`
+- `pct_OAOE_DC = 100 * OAOE_DC / (OAOE_UC + OAOE_DC)`
+
+### Power Density
+
+In `adv.py`, power density is evaluated at each reduced velocity first, and then the reported metric is taken as the peak value within each `(SP_U, SP_D, damping)` group.
+
+For each `UR` point:
+
+- if the system is IC, `Y_max(UR) = Y1`, `width = D`, and `P_sys(UR) = P_total`
+- if the system is C-C or C-P-C, `Y_max(UR) = max(Y1, Y2)`, `width = 2 * D + SP_U + SP_D + t`, and `P_sys(UR) = P_UC + P_DC`
+
+The script then evaluates:
+
+- `height(UR) = 2 * Y_max(UR) + D`
+- `PD(UR) = P_sys(UR) / (width * height(UR))`
+
+The reported summary metric is:
+
+- `PD_peak_total = max over UR of PD(UR)`
+
+In the current `adv.py`, the constants used in this calculation are `D = 1.0` and `t = 0.2`.
 
 ## Typical Workflow
 
@@ -372,7 +429,7 @@ The script includes plotting routines for metrics such as:
 ## Reproducibility Notes
 
 - This repository includes representative input files, one archived validation snapshot, and the post-processing scripts used to define derived quantities.
-- The current scripts document how metrics such as power density, OAOP, OAOE, `ΔOAOP`, and `ΔOAOE` were computed.
+- The current scripts document how metrics such as power density, OAOP, OAOE, `Delta_OAOP`, and `Delta_OAOE` were computed.
 - Do not modify or overwrite files inside `IC_VIV_Ur_5_data/previous_data/` if you want to preserve the archived snapshot.
 - If `input2d` is edited to use absolute paths, those paths must be updated on a new machine.
 - The validation case in this package was originally run with IBAMR `0.14.0`.

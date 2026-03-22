@@ -68,7 +68,7 @@ def read_and_evaluate_parameters(filename):
 
 def filter_last_n_seconds(data, end_time):
     if end_time is not None:
-        start_time = end_time - smapling_duration
+        start_time = end_time - sampling_duration
         return data[(data[0] >= start_time) & (data[0] <= end_time)]
     return data
 
@@ -342,7 +342,7 @@ else:
 
 damping_ratio = damping_ratio1
 natural_frequency = params.get('Fn_1', None)
-total_time = params.get('samping_duration', None)
+total_time = params.get('sampling_duration', None)
 SP_U = params.get('SPU', None)
 SP_D = params.get('SPD', None)
 ref_length_1 = params.get('D_1', None) * params.get('M_1', None)
@@ -356,8 +356,8 @@ RE = params.get('Re', None)
 fn_1 = params.get('Fn_1', None)
 fn_2 = params.get('Fn_2', None)
 end_time = params.get('TIMEending', None)
-smapling_duration = params.get('samping_duration', None)
-start_time = end_time - smapling_duration
+sampling_duration = params.get('sampling_duration', None)
+start_time = end_time - sampling_duration
 round_num = params.get('round_num', None)
 
 
@@ -547,7 +547,7 @@ plt.xlabel("Time")
 plt.ylabel("Amplitude")
 plt.title("First Three Harmonics: Displacement (solid) vs. Lift (dashed) UC")
 plt.legend(ncol=2, fontsize='small')
-plt.xlim([end_time-0.75*smapling_duration,end_time])
+plt.xlim([end_time-0.75*sampling_duration,end_time])
 plt.tight_layout()
 plt.savefig('harmonics_overlayUC.png')
 
@@ -1008,7 +1008,7 @@ def compute_Ca(Cy, zeta, time_array, eps=1e-12):
 
 
 
-Ekut, Eku, C_a_1 = compute_lift_velocity_acceleration (cl_1[1].to_numpy(), disp_1[4].to_numpy(), time, smapling_duration, U_MAX, ref_length_1)
+Ekut, Eku, C_a_1 = compute_lift_velocity_acceleration (cl_1[1].to_numpy(), disp_1[4].to_numpy(), time, sampling_duration, U_MAX, ref_length_1)
 
 
 
@@ -1026,7 +1026,7 @@ def compute_ce(C_l, v, time, T):
 
 
 
-Ek11 = compute_ce (cl_1[1].to_numpy(), disp_1[4].to_numpy(), time, smapling_duration)
+Ek11 = compute_ce (cl_1[1].to_numpy(), disp_1[4].to_numpy(), time, sampling_duration)
 
 print(f"Time-mean energy transfer coefficient for UC E_mean:  {Eku}" )
 
@@ -1281,7 +1281,7 @@ axs_left.yaxis.set_major_locator(MultipleLocator(ltick_step))
 
 axs_left.set_xlabel('T*', fontsize= font_size * 1.4)
 axs_left.set_ylabel('Y and $C_{{\\mathrm{{L}}}}$', color='black', fontsize=font_size * 1.4)
-axs_left.set_xlim([end_time-0.5*smapling_duration,end_time])
+axs_left.set_xlim([end_time-0.5*sampling_duration,end_time])
 axs_left.set_ylim([-1*ylim_l,ylim_l])
 axs_left.xaxis.set_major_locator(MaxNLocator(nbins=5))
 axs_left.yaxis.set_major_locator(MaxNLocator(nbins=5))

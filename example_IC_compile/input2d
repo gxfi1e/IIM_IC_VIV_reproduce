@@ -9,8 +9,8 @@ D_3   = 1.0              // body 3 diameter which is ignored in IC case
 R_3   = D_3/2.0          // body 3 radius which is ignored in IC case
 Ratio = 1                // diameter ratio of body 3 to body 1 and is ignored in IC case
 RL = D_3 / Ratio         
-TIMEending = 300         // simulation end time
-samping_duration = 100   // duration for sampling data, should be less than TIMEending
+TIMEending = 200         // simulation end time
+sampling_duration = 100   // duration for sampling data, should be less than TIMEending
 resolution = 101         // grid resolution on coarsest level, cooresponding to the finest grid resolution of 1/ (100*2^4 / 20) = 1/80
 damping = 0              // structural damping ratio, 0 for no damping
 MESH_FILENAME = "../IC_mesh/cylinder40.e"    // body 1 mesh file 

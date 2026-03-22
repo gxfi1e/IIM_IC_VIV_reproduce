@@ -72,13 +72,13 @@ fn_1 = params.get('Fn_1', None)
 fn_2 = params.get('Fn_2', None)
 # Access the sampling range
 end_time = params.get('TIMEending', None)  # End time of the simulation
-smapling_duration = params.get('samping_duration', None)
+sampling_duration = params.get('sampling_duration', None)
 round_num = params.get('round_num', None)
 
 # Modify this function to filter data for the last 100 seconds
 def filter_last_n_seconds(data, end_time):
     if end_time is not None:
-        start_time = end_time - smapling_duration  # Calculate the start time of the last 100 seconds
+        start_time = end_time - sampling_duration  # Calculate the start time of the last 100 seconds
         return data[(data[0] >= start_time) & (data[0] <= end_time)]
     return data
     

@@ -2,9 +2,14 @@
 
 ## Overview
 
-This repository contains the minimum materials needed to reproduce the 2D immersed interface method (IIM) simulations used in this work and to inspect the isolated-cylinder validation case.
+This repository provides a representative reproducibility package for the 2D immersed interface method (IIM) simulations used in this work. It includes:
 
-Two IBAMR versions are relevant:
+- the customized IBAMR-based solver source
+- a validation-case mesh and input file
+- an archived isolated-cylinder reference snapshot
+- post-processing scripts that document how case-level and campaign-level metrics were computed
+
+Two IBAMR versions are relevant in this study:
 
 - Validation case: IBAMR `0.14.0`
 - Present production simulations: IBAMR `0.16.0`
@@ -42,6 +47,10 @@ IIM_IC_VIV_reproduce/
 |       |-- computation_results1_101_101_5.csv
 |       |-- example.o
 |       `-- example.d
+|-- scripts_for_post_calculation/
+|   |-- origin1.py
+|   |-- post1en.py
+|   `-- plot.py
 |-- LICENSE
 `-- README.md
 ```
@@ -50,44 +59,83 @@ IIM_IC_VIV_reproduce/
 
 ### `example_IC_compile/`
 
-Build directory for the 2D solver.
+Build directory for the customized 2D solver.
 
 - `example.cpp`: customized 2D IBAMR/IIM solver source
 - `CMakeLists.txt`: CMake build script
-- `input2d`: example input file used during development and testing
+- `input2d`: development/test input file
 
 ### `IC_mesh/`
 
 Mesh assets for the validation case.
 
-- `cylinder40.e`: Exodus mesh file referenced by the case input
+- `cylinder40.e`: Exodus mesh used by the provided case
 
 ### `IC_VIV_Ur_5_data/`
 
-Starter files for reproducing the `Ur = 5` validation case.
+Starter files for reproducing the isolated-cylinder validation case at `Ur = 5`.
 
 - `main2d`: executable that can be used as a starting point for a rerun
 - `input2d`: runtime input file for a fresh run
-- `example.cpp`: source snapshot for reference
-- `previous_data/`: preserved snapshot of the author's archived results
+- `example.cpp`: source snapshot kept with the case
+- `previous_data/`: archived reference outputs from the author's run
 
 ### `IC_VIV_Ur_5_data/previous_data/`
 
-Read-only reference data from the archived validation run.
+Read-only reference snapshot of the archived isolated-cylinder case.
 
 This folder contains:
 
-- output histories such as `CD_1.curve`, `CL_1.curve`, `CDisplacement_1.curve`, `CTD_1.curve`, and `CTL_1.curve`
+- force, displacement, and coefficient histories (`CD_1.curve`, `CL_1.curve`, `CDisplacement_1.curve`, `CTD_1.curve`, `CTL_1.curve`)
 - the archived timing log `simulation_log.txt`
 - the processed summary `computation_results1_101_101_5.csv`
-- the post-processing script `post.py`
+- the case-level post-processing script `post.py`
 - archived build artifacts such as `example.o` and `example.d`
+
+### `scripts_for_post_calculation/`
+
+Study-level post-processing scripts used to organize, derive, and visualize campaign metrics.
+
+- `origin1.py`: scans a campaign directory for per-case `computation_results3_<SPU>_<SPD>_<UR>_<damping>.csv` files, copies them into a `post/results/` folder, and merges them into `final_results.csv`
+- `post1en.py`: single-case post-processing script for the energy-harvesting workflow; reads local run outputs, computes response and power-related quantities, and writes a per-case `computation_results3_*.csv`
+- `plot.py`: reads aggregated results from `final_results.csv` and generates comparison metrics and figures, including power density, OAOP, OAOE, and improvement metrics across reduced velocity, damping ratio, and spacing ratios
+
+## Repository Scope
+
+This repository is organized as a reproducibility package centered on the included isolated-cylinder validation example, together with the solver source and the post-processing scripts used in the broader study workflow.
+
+It includes:
+
+- solver source code
+- representative input files
+- the validation-case mesh
+- one archived isolated-cylinder reference dataset
+- case-level and campaign-level post-processing scripts
+
+Some study-level plotting and aggregation scripts are also provided for completeness, but they are designed to work with broader campaign datasets that are not bundled in this repository.
 
 ## Important Usage Note
 
 `IC_VIV_Ur_5_data/previous_data/` is an archived snapshot and should be kept unchanged.
 
-For a clean separation between archived results and new results, do not run the solver inside `IC_VIV_Ur_5_data/previous_data/`, and preferably do not run directly inside `IC_VIV_Ur_5_data/` either. The recommended approach is to create a separate working directory for your own rerun.
+For a clean separation between archived results and new results, do not run the solver inside `IC_VIV_Ur_5_data/previous_data/`, and preferably do not run directly inside `IC_VIV_Ur_5_data/` either. Create a separate working directory for your own rerun.
+
+## Where Key Numerical Settings Are Defined
+
+The main numerical settings are already exposed in the public repository:
+
+- `IC_VIV_Ur_5_data/input2d` contains the case parameters, mesh path, domain size, grid spacing, refinement controls, delta-function choice, pressure/velocity jump-condition flags, CFL limit, time-step definition, boundary-condition coefficients, logging, visualization, and restart settings
+- `example_IC_compile/example.cpp` shows how the customized solver is wired into IBAMR, including the use of `IIMethod`, `INSStaggeredHierarchyIntegrator`, `IBExplicitHierarchyIntegrator`, force/traction extraction, and the rigid-body coupling update
+- the solver source also sets PETSc tolerances for the provided executable build path, including `-ksp_rtol = 1e-10` and `-stokes_ksp_atol = 1e-10`
+
+For the included validation example:
+
+- `START_TIME = 0.0`
+- `END_TIME = TIMEending`
+- `TIMEending = 200`
+- `samping_duration = 100`
+
+The current post-processing scripts evaluate statistical quantities over the last `samping_duration` seconds of the run.
 
 ## Minimum Files Needed
 
@@ -111,17 +159,17 @@ You need:
 
 For convenience, the repository already provides starter copies in `IC_VIV_Ur_5_data/`.
 
-The supplied input file uses the mesh path:
+The supplied input file uses:
 
 ```text
 MESH_FILENAME = "../IC_mesh/cylinder40.e"
 ```
 
-This path remains valid if you create your new run directory as a sibling of `IC_mesh/`, as recommended below.
+This path remains valid if your new run directory is created as a sibling of `IC_mesh/`, as recommended below.
 
 ## Software Requirements
 
-This example depends on CMake, MPI, and IBAMR.
+### Solver
 
 - CMake `>= 3.15`
 - MPI compiler wrappers: `mpicc`, `mpicxx`
@@ -140,17 +188,16 @@ find /usr /usr/local /opt $HOME /ibex -name IBAMRConfig.cmake 2>/dev/null
 find /usr /usr/local /opt $HOME /ibex -name ibamr-config.cmake 2>/dev/null
 ```
 
-If the result is, for example:
+### Python Post-Processing
 
-```bash
-/home/user/autoibamr/packages/IBAMR-0.16.0/lib64/cmake/ibamr/IBAMRConfig.cmake
-```
+The public post-processing scripts use standard scientific Python packages, including:
 
-then use:
+- `numpy`
+- `pandas`
+- `scipy`
+- `matplotlib`
 
-```bash
--DIBAMR_DIR=/home/user/autoibamr/packages/IBAMR-0.16.0/lib64/cmake/ibamr
-```
+Some scripts also contain machine-specific path variables that must be edited before reuse on a different system.
 
 ## Build the Solver
 
@@ -193,7 +240,7 @@ cp IC_VIV_Ur_5_data/input2d IC_VIV_Ur_5_run/
 cp IC_VIV_Ur_5_data/previous_data/post.py IC_VIV_Ur_5_run/
 ```
 
-The first two files are required. Copying `post.py` is optional, but convenient if you want to regenerate processed results after the run.
+The first two files are required. Copying `post.py` is optional, but useful if you want to regenerate the isolated-cylinder summary for your rerun.
 
 ### Step 2: optionally replace the executable with your rebuilt one
 
@@ -245,17 +292,49 @@ Key files include:
 - `simulation_log.txt`: simulation timing log
 - `computation_results1_101_101_5.csv`: processed summary generated from the archived run
 
-Use these files as reference data for comparison with the outputs generated in your own run directory.
+Use these files as reference data when comparing against outputs generated in your own run directory.
 
-## Post-Processing
+## Post-Processing Workflow
 
-The archived post-processing script is stored at:
+The repository now exposes several layers of post-processing logic.
 
-```text
-IC_VIV_Ur_5_data/previous_data/post.py
-```
+### 1. Included isolated-cylinder case post-processing
 
-The script reads `input2d` and output files from the current working directory. Therefore, if you want to post-process a fresh rerun, copy `post.py` into your new run directory and execute it there after the simulation finishes.
+`IC_VIV_Ur_5_data/previous_data/post.py` is the archived case-level script for the included isolated-cylinder snapshot.
+
+It reads local run outputs from the current working directory and produces the summary CSV stored in the archive.
+
+### 2. Per-case energy-harvesting post-processing
+
+`scripts_for_post_calculation/post1en.py` is a single-case post-processing script for energy-harvesting runs.
+
+At a high level, it:
+
+- reads `input2d` and local history files
+- filters the histories to the final sampling window defined by `samping_duration`
+- computes response, frequency, power, efficiency, and selected added-damping or galloping-related indicators
+- writes a per-case CSV named like `computation_results3_<SPU>_<SPD>_<UR>_<damping>.csv`
+
+### 3. Campaign aggregation
+
+`scripts_for_post_calculation/origin1.py` collects the per-case `computation_results3_*.csv` files from a study directory and merges them into `final_results.csv`.
+
+Before reuse, the user should edit the hard-coded `base_dir` near the top of the script to match the local filesystem layout.
+
+### 4. Campaign plotting and derived metrics
+
+`scripts_for_post_calculation/plot.py` reads `final_results.csv` and generates higher-level comparisons and figures.
+
+The script includes calculations and plotting routines for metrics such as:
+
+- power density
+- OAOP-related quantities
+- OAOE-related quantities
+- percentage-contribution breakdowns
+- improvement metrics relative to isolated-cylinder baselines
+- contour and trend plots across reduced velocity, damping ratio, `SP_U`, and `SP_D`
+
+Because this script was written for the broader study workflow, some plotting sections expect aggregated datasets beyond the files bundled here, and some example calls still use study-specific paths that must be edited before reuse.
 
 ## Typical Workflow
 
@@ -263,18 +342,21 @@ The script reads `input2d` and output files from the current working directory. 
 2. Build the solver in `example_IC_compile/`, or use the provided starter executable.
 3. Create a clean working directory such as `IC_VIV_Ur_5_run/`.
 4. Copy `main2d` and `input2d` into that new directory.
-5. Optionally copy `post.py` from `IC_VIV_Ur_5_data/previous_data/`.
-6. Run the case in serial or through MPI.
-7. Compare your newly generated outputs against the archived files in `IC_VIV_Ur_5_data/previous_data/`.
+5. Run the validation case in serial or through MPI.
+6. If desired, copy `post.py` into the run directory and regenerate the isolated-cylinder summary.
+7. Use the archived files in `IC_VIV_Ur_5_data/previous_data/` as the public reference snapshot.
+8. For broader campaign studies, use `post1en.py`, `origin1.py`, and `plot.py` on your own local datasets or on datasets shared separately.
 
 ## Reproducibility Notes
 
+- This repository includes representative input files, one archived validation snapshot, and the post-processing scripts used to define derived quantities.
+- The current scripts document how metrics such as power density, OAOP, OAOE, and improvement factors were computed.
 - Do not modify or overwrite files inside `IC_VIV_Ur_5_data/previous_data/` if you want to preserve the archived snapshot.
 - If `input2d` is edited to use absolute paths, those paths must be updated on a new machine.
 - The validation case in this package was originally run with IBAMR `0.14.0`.
 - The present production simulations reported in the manuscript were run with IBAMR `0.16.0`.
 - The current build procedure in this repository has been checked with IBAMR `0.16.0`.
-- Exact agreement with published results requires the same source, input settings, mesh, and software environment.
+- Exact agreement with published results requires the same source, input settings, mesh, software environment, and the corresponding full case dataset.
 
 ## Origin and References
 

@@ -37,7 +37,7 @@ IIM_IC_VIV_reproduce/
 |   |-- input2d
 |   |-- main2d
 |   `-- previous_data/
-|       |-- post.py
+|       |-- post1.py
 |       |-- CD_1.curve
 |       |-- CL_1.curve
 |       |-- CDisplacement_1.curve
@@ -90,7 +90,7 @@ This folder contains:
 - force, displacement, and coefficient histories (`CD_1.curve`, `CL_1.curve`, `CDisplacement_1.curve`, `CTD_1.curve`, `CTL_1.curve`)
 - the archived timing log `simulation_log.txt`
 - the processed summary `computation_results1_101_101_5.csv`
-- the case-level post-processing script `post.py`
+- the case-level post-processing script `post1.py`
 - archived build artifacts such as `example.o` and `example.d`
 
 ### `scripts_for_post_calculation/`
@@ -135,9 +135,9 @@ For the included validation example:
 - `START_TIME = 0.0`
 - `END_TIME = TIMEending`
 - `TIMEending = 200`
-- `sampling_duration = 100`
+- `samping_duration = 100`
 
-The current post-processing scripts evaluate statistical quantities over the last `sampling_duration` seconds of the run.
+The current post-processing scripts evaluate statistical quantities over the last `samping_duration` seconds of the run.
 
 ## Minimum Files Needed
 
@@ -239,10 +239,10 @@ For example:
 mkdir IC_VIV_Ur_5_run
 cp IC_VIV_Ur_5_data/main2d IC_VIV_Ur_5_run/
 cp IC_VIV_Ur_5_data/input2d IC_VIV_Ur_5_run/
-cp IC_VIV_Ur_5_data/previous_data/post.py IC_VIV_Ur_5_run/
+cp IC_VIV_Ur_5_data/previous_data/post1.py IC_VIV_Ur_5_run/
 ```
 
-The first two files are required. Copying `post.py` is optional, but useful if you want to regenerate the isolated-cylinder summary for your rerun.
+The first two files are required. Copying `post1.py` is optional, but useful if you want to regenerate the isolated-cylinder summary for your rerun.
 
 ### Step 2: optionally replace the executable with your rebuilt one
 
@@ -302,7 +302,7 @@ The repository includes both case-level and study-level post-processing scripts.
 
 ### 1. Included isolated-cylinder case post-processing
 
-`IC_VIV_Ur_5_data/previous_data/post.py` is the archived case-level script for the included isolated-cylinder data.
+`IC_VIV_Ur_5_data/previous_data/post1.py` is the archived case-level script for the included isolated-cylinder data.
 
 It reads local run outputs from the current working directory and produces the summary CSV stored in the archive.
 
@@ -313,7 +313,7 @@ It reads local run outputs from the current working directory and produces the s
 At a high level, it:
 
 - reads `input2d` and local history files
-- filters the histories to the final sampling window defined by `sampling_duration.`
+- filters the histories to the final sampling window defined by `samping_duration`
 - computes response, frequency, power, efficiency, and selected added-damping or galloping-related indicators
 - writes a per-case CSV named like `computation_results3_<SPU>_<SPD>_<UR>_<damping>.csv`
 
@@ -422,7 +422,7 @@ In the current `adv.py`, the constants used in this calculation are `D = 1.0` an
 3. Create a clean working directory such as `IC_VIV_Ur_5_run/`.
 4. Copy `main2d` and `input2d` into that new directory.
 5. Run the validation case in serial or through MPI.
-6. If desired, copy `post.py` into the run directory and regenerate the isolated-cylinder summary.
+6. If desired, copy `post1.py` into the run directory and regenerate the isolated-cylinder summary.
 7. Use the archived files in `IC_VIV_Ur_5_data/previous_data/` as the public reference snapshot.
 8. For broader campaign studies, use `post1en.py` to generate per-case CSV files, `origin1.py` to merge them into `final_results.csv`, `adv.py` to compute summary metrics, and `adv_plot.py` to generate the comparative figures.
 

@@ -392,8 +392,7 @@ For C-C and C-P-C cases, `adv.py` also computes the UC/DC contribution ratios:
 
 - `pct_OAOP_UC = 100 * OAOP_UC / OAOP_Total`
 - `pct_OAOP_DC = 100 * OAOP_DC / OAOP_Total`
-- `pct_OAOE_UC = 100 * OAOE_UC / (OAOE_UC + OAOE_DC)`
-- `pct_OAOE_DC = 100 * OAOE_DC / (OAOE_UC + OAOE_DC)`
+
 
 ### Power Density
 

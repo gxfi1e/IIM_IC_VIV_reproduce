@@ -386,7 +386,7 @@ The improvement metrics are defined relative to the isolated-cylinder baseline s
 
 Note that the total OAOP improvement is normalized by `2 * OAOP_IC`, while the total OAOE improvement is normalized by `OAOE_IC`, matching the current implementation in `adv.py`.
 
-### OAOP and OAOE Contribution Ratios
+### OAOP Contribution Ratios
 
 For C-C and C-P-C cases, `adv.py` also computes the UC/DC contribution ratios:
 

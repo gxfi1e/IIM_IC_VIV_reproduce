@@ -6,7 +6,7 @@ This repository provides a representative reproducibility package for the 2D imm
 
 - the customized IBAMR-based solver source
 - a validation-case mesh and input file
-- an archived isolated-cylinder reference data
+- an archived isolated-cylinder reference dataset
 - post-processing scripts that document how case-level and campaign-level metrics were computed
 
 Two IBAMR versions are relevant in this study:
@@ -118,7 +118,7 @@ Some study-level aggregation and plotting scripts are also provided for complete
 
 ## Important Usage Note
 
-`IC_VIV_Ur_5_data/previous_data/` is an archived data and should be kept unchanged.
+`IC_VIV_Ur_5_data/previous_data/` contains archived reference data and should be kept unchanged.
 
 For a clean separation between archived results and new results, do not run the solver inside `IC_VIV_Ur_5_data/previous_data/`, and preferably do not run directly inside `IC_VIV_Ur_5_data/` either. Create a separate working directory for your own rerun.
 
@@ -135,9 +135,9 @@ For the included validation example:
 - `START_TIME = 0.0`
 - `END_TIME = TIMEending`
 - `TIMEending = 200`
-- `samping_duration = 100`
+- `sampling_duration = 100`
 
-The current post-processing scripts evaluate statistical quantities over the last `samping_duration` seconds of the run.
+The current post-processing scripts evaluate statistical quantities over the last `sampling_duration` seconds of the run.
 
 ## Minimum Files Needed
 
@@ -313,7 +313,7 @@ It reads local run outputs from the current working directory and produces the s
 At a high level, it:
 
 - reads `input2d` and local history files
-- filters the histories to the final sampling window defined by `samping_duration`
+- filters the histories to the final sampling window defined by `sampling_duration`
 - computes response, frequency, power, efficiency, and selected added-damping or galloping-related indicators
 - writes a per-case CSV named like `computation_results3_<SPU>_<SPD>_<UR>_<damping>.csv`
 
@@ -392,7 +392,8 @@ For C-C and C-P-C cases, `adv.py` also computes the UC/DC contribution ratios:
 
 - `pct_OAOP_UC = 100 * OAOP_UC / OAOP_Total`
 - `pct_OAOP_DC = 100 * OAOP_DC / OAOP_Total`
-
+- `pct_OAOE_UC = 100 * OAOE_UC / (OAOE_UC + OAOE_DC)`
+- `pct_OAOE_DC = 100 * OAOE_DC / (OAOE_UC + OAOE_DC)`
 
 ### Power Density
 

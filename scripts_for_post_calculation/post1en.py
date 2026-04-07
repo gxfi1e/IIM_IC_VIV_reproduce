@@ -1199,7 +1199,7 @@ for case_dir in os.listdir(ic_base_dir):
                     m = re.search(r'TIMEending\s*=\s*([\d\.]+)', line)
                     if m:
                         end_time_ic = float(m.group(1))
-                    # Parse sampling_duration (or samping_duration)
+                    # Parse sampling_duration; keep the legacy typo as a fallback
                     m2 = re.search(r'samp(?:l|i)ng_duration\s*=\s*([\d\.]+)', line)
                     if m2:
                         durr = float(m2.group(1))
@@ -1349,6 +1349,5 @@ axs_right.set_ylim([-1*ylim_r,ylim_r])
 # Save the figure
 filename8 = f"combined_plot_UC_{SP_U}_{SP_D}_{UR}_{damping_ratio}.jpg"
 fig8.savefig(filename8, dpi=600, format='jpg')
-
 
 
